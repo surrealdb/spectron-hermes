@@ -1,0 +1,9 @@
+{
+  "endpoint": "https://your-instance.spectron.dev",
+  "context": "my-context",
+  "recall_mode": "hybrid",
+  "write_frequency": "turn",
+  "top_k": 5,
+  "default_scope": "user/tobie",
+  "consolidate_on_end": true
+}
