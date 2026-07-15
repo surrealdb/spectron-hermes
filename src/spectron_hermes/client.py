@@ -1,9 +1,9 @@
 """Spectron client construction and error-class resolution.
 
-Imports are deliberately lazy: the SurrealDB Spectron SDK is only imported when
-we actually build a client, so importing this package never fails just because
-the optional ``surrealdb[spectron]`` extra isn't installed. ``is_available()``
-relies on this to do a cheap, dependency-only readiness check.
+Imports are deliberately lazy: the SurrealDB SDK is only imported when we
+actually build a client, so importing this package never fails just because
+``surrealdb`` (>=3.0.0a1, which bundles Spectron) isn't installed.
+``is_available()`` relies on this to do a cheap, dependency-only readiness check.
 """
 
 from __future__ import annotations

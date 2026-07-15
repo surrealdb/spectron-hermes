@@ -60,12 +60,15 @@ class FakeSpectron:
             raise RuntimeError("boom in query_context")
         return FakeResp(answer="Tobie is the CTO and prefers dark mode.")
 
-    def remember(self, text, *, scope=None, **kwargs):
-        self.calls.append(("remember", text, scope))
+    def remember(self, text, *, scopes=None, **kwargs):
+        # Param name mirrors the real SDK (scopes, plural). A wrong keyword from
+        # the code under test lands in **kwargs, leaving scopes=None and failing
+        # the scope assertions below.
+        self.calls.append(("remember", text, scopes))
         return FakeResp(stored=True)
 
-    def remember_many(self, items, *, session_id=None, scope=None, **kwargs):
-        self.calls.append(("remember_many", tuple(m["role"] for m in items), session_id, scope))
+    def remember_many(self, items, *, session_id=None, scopes=None, **kwargs):
+        self.calls.append(("remember_many", tuple(m["role"] for m in items), session_id, scopes))
         return FakeResp(count=len(items))
 
     def forget(self, query, *, purge=False, **kwargs):
@@ -290,3 +293,31 @@ def test_to_jsonable_variants():
     assert to_jsonable(FakeResp(a=1, b=[FakeResp(c=2)])) == {"a": 1, "b": [{"c": 2}]}
     assert to_jsonable({"x": (1, 2)}) == {"x": [1, 2]}
     assert to_jsonable("s") == "s"
+
+
+def test_dispatch_kwargs_match_real_sdk():
+    """Guard the keyword names we pass against the real Spectron SDK.
+
+    Skipped when `surrealdb` isn't installed (e.g. CI runs --no-deps). Catches
+    drift like remember(scope=...) vs the SDK's remember(scopes=...).
+    """
+    import inspect
+
+    spectron = pytest.importorskip("surrealdb.spectron")
+
+    def params(method_owner, method_name):
+        return set(inspect.signature(getattr(method_owner, method_name)).parameters)
+
+    Spectron = spectron.Spectron
+    remember = params(Spectron, "remember")
+    assert "scopes" in remember and "scope" not in remember
+    assert "scopes" in params(Spectron, "remember_many")
+    assert "lens" in params(Spectron, "recall")
+    assert "lens" in params(Spectron, "query_context")
+    assert "purge" in params(Spectron, "forget")
+    assert "persist" in params(Spectron, "reflect")
+
+    from surrealdb.spectron._namespaces.documents import BlockingDocuments
+
+    upload = params(BlockingDocuments, "upload")
+    assert "title" in upload and "scopes" in upload

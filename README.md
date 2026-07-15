@@ -26,15 +26,15 @@ and gains six explicit memory tools it can call directly.
 pip install spectron-hermes-agent
 ```
 
-This pulls in the Spectron SDK (`surrealdb[spectron]`) and registers the plugin
-with Hermes via the `hermes_agent.plugins` entry point.
+This pulls in the SurrealDB SDK (`surrealdb` v3, which bundles Spectron) and
+registers the plugin with Hermes via the `hermes_agent.plugins` entry point.
 
 <details>
 <summary>Alternative: drop-in directory</summary>
 
 If your Hermes setup discovers memory providers by directory, copy the package
 into `$HERMES_HOME/plugins/spectron/` (it ships a `plugin.yaml` manifest for
-this) and `pip install "surrealdb[spectron]"`.
+this) and `pip install "surrealdb>=3.0.0a1"`.
 </details>
 
 ## Configure & activate
@@ -103,7 +103,7 @@ pytest
 ```
 
 Tests use a mock Spectron client and need neither a live server nor the
-`surrealdb[spectron]` extra.
+`surrealdb` SDK installed.
 
 ## License
 

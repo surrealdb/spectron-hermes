@@ -264,7 +264,7 @@ class SpectronMemoryProvider(MemoryProvider):
     def _flush_write(self, job: Dict[str, Any]) -> None:
         kwargs: Dict[str, Any] = {"session_id": job["session_id"]}
         if self._default_scope:
-            kwargs["scope"] = self._default_scope
+            kwargs["scopes"] = self._default_scope
         self._client.remember_many(job["items"], **kwargs)
         self._record_ok()
 

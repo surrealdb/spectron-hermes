@@ -185,7 +185,7 @@ def dispatch(
     if tool_name == "spectron_remember":
         scope = args.get("scope") or default_scope
         if scope:
-            return to_jsonable(client.remember(args["text"], scope=scope))
+            return to_jsonable(client.remember(args["text"], scopes=scope))
         return to_jsonable(client.remember(args["text"]))
 
     if tool_name == "spectron_context":

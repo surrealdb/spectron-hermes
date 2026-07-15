@@ -17,8 +17,7 @@ classifiers = [
     "Intended Audience :: Developers",
 ]
 dependencies = [
-    # Spectron ships as an optional extra of the SurrealDB Python SDK.
-    "surrealdb[spectron]>=1.0.0a5",
+    "surrealdb>=3.0.0a1",
 ]
 
 [project.optional-dependencies]
