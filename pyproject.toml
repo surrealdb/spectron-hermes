@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "spectron-hermes-agent"
+name = "spectron-hermes"
 version = "0.1.0"
 description = "SurrealDB Spectron memory provider for the Hermes Agent runtime"
 readme = "README.md"

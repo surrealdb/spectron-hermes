@@ -55,7 +55,7 @@ jobs:
     # "pypi" environment in the repo settings.
     environment:
       name: pypi
-      url: https://pypi.org/p/spectron-hermes-agent
+      url: https://pypi.org/p/spectron-hermes
     permissions:
       id-token: write
     steps:
