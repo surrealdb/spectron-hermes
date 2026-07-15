@@ -23,7 +23,7 @@ and gains six explicit memory tools it can call directly.
 ## Install
 
 ```bash
-pip install spectron-integration-hermes-agent
+pip install spectron-hermes-agent
 ```
 
 This pulls in the Spectron SDK (`surrealdb[spectron]`) and registers the plugin
