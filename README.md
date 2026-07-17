@@ -16,7 +16,8 @@ and gains six explicit memory tools it can call directly.
 ## Requirements
 
 - Python 3.10+
-- A running Hermes Agent install
+- A running [Hermes Agent](https://github.com/NousResearch/hermes-agent) install
+  (verified against Hermes Agent 0.18.2)
 - Spectron access (endpoint, context, API key). Spectron is in
   [invite-only preview](https://surrealdb.com/pricing/spectron).
 
@@ -34,7 +35,7 @@ registers the plugin with Hermes via the `hermes_agent.plugins` entry point.
 
 If your Hermes setup discovers memory providers by directory, copy the package
 into `$HERMES_HOME/plugins/spectron/` (it ships a `plugin.yaml` manifest for
-this) and `pip install "surrealdb>=3.0.0a1"`.
+this) and `pip install "surrealdb>=3.0.0a4"`.
 </details>
 
 ## Configure & activate

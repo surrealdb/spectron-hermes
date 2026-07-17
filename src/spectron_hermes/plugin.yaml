@@ -1,7 +1,7 @@
 name: spectron
-version: 0.1.0
+version: 0.3.0
 description: "SurrealDB Spectron memory — provenance-first, tri-temporal agent memory with semantic, lexical, graph and temporal recall."
 pip_dependencies:
-  - surrealdb>=3.0.0a1
+  - surrealdb>=3.0.0a4
 hooks:
   - on_session_end

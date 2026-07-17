@@ -2,7 +2,7 @@
 
 Imports are deliberately lazy: the SurrealDB SDK is only imported when we
 actually build a client, so importing this package never fails just because
-``surrealdb`` (>=3.0.0a1, which bundles Spectron) isn't installed.
+``surrealdb`` (>=3.0.0a4, which bundles Spectron) isn't installed.
 ``is_available()`` relies on this to do a cheap, dependency-only readiness check.
 """
 

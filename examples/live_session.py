@@ -1,7 +1,7 @@
 """Drive the Spectron provider against a LIVE Spectron instance.
 
 Requires:
-  * ``pip install "surrealdb>=3.0.0a1"`` (v3 bundles Spectron)
+  * ``pip install "surrealdb>=3.0.0a4"`` (v3 bundles Spectron)
   * Spectron credentials in the environment:
         export SPECTRON_ENDPOINT="https://your-instance.spectron.dev"
         export SPECTRON_CONTEXT="my-context"
@@ -29,7 +29,7 @@ def main() -> int:
     if not provider.is_available():
         print(
             "Spectron is not configured. Set SPECTRON_ENDPOINT / SPECTRON_CONTEXT / "
-            "SPECTRON_API_KEY and `pip install 'surrealdb>=3.0.0a1'`.",
+            "SPECTRON_API_KEY and `pip install 'surrealdb>=3.0.0a4'`.",
             file=sys.stderr,
         )
         return 1
