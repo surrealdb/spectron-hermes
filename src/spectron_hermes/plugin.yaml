@@ -1,7 +1,26 @@
+# `name` is load-bearing: `hermes plugins install` uses it for the installed
+# directory name, and Hermes uses that directory name as the provider name in the
+# `hermes memory setup` picker and in config.yaml's `memory.provider` key.
 name: spectron
 version: 0.3.0
 description: "SurrealDB Spectron memory — provenance-first, tri-temporal agent memory with semantic, lexical, graph and temporal recall."
 pip_dependencies:
   - surrealdb>=3.0.0a4
+# Prompted for at install time and saved to $HERMES_HOME/.env, so credentials do
+# not depend on a shell export that disappears with the session.
+requires_env:
+  - name: SPECTRON_API_KEY
+    description: "Spectron API key"
+    url: "https://surrealdb.com/pricing/spectron"
+    secret: true
+  - name: SPECTRON_ENDPOINT
+    description: "Spectron endpoint origin, e.g. https://your-instance.spectron.dev"
+  - name: SPECTRON_CONTEXT
+    description: "Spectron context this agent's memory is pinned to"
+# Hermes' memory manager calls hooks directly rather than gating on this list,
+# but an out-of-date manifest is a trap for the next reader.
 hooks:
+  - on_memory_write
+  - on_session_switch
+  - on_delegation
   - on_session_end

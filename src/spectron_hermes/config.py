@@ -1,10 +1,10 @@
 """Configuration resolution for the Spectron memory provider.
 
 Resolution order for each field: value in ``$HERMES_HOME/spectron.json`` first,
-then the environment variable, then the built-in default. Secrets (the API key)
-are expected to live in the environment (Hermes writes ``secret: True`` fields to
-``.env``); non-secret settings are persisted to ``spectron.json`` by
-:func:`save_config_file`.
+then the environment variable, then ``$HERMES_HOME/.env``, then the built-in
+default. Secrets (the API key) are never written to ``spectron.json`` — Hermes
+keeps ``secret: True`` fields in ``.env`` — while non-secret settings are
+persisted to ``spectron.json`` by :func:`save_config_file`.
 """
 
 from __future__ import annotations
@@ -65,18 +65,54 @@ def _read_json(path: Path) -> Dict[str, Any]:
         return {}
 
 
-def _pick(file_cfg: Dict[str, Any], key: str, env_var: str, default: Any) -> Any:
+def _read_env_file(hermes_home: Optional[str]) -> Dict[str, str]:
+    """Parse ``$HERMES_HOME/.env`` into a dict. Missing/unreadable file → ``{}``.
+
+    Hermes writes secrets here, but whether they are exported into ``os.environ``
+    depends on the host process. Reading the file directly means a key saved by
+    ``hermes memory setup`` resolves even when nothing loaded it into the
+    environment — otherwise a correctly configured provider reports itself
+    unavailable.
+    """
+    path = Path(default_hermes_home(hermes_home)) / ".env"
+    values: Dict[str, str] = {}
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (FileNotFoundError, OSError, UnicodeDecodeError):
+        return values
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        values[key.strip()] = value.strip().strip("'\"")
+    return values
+
+
+def _pick(
+    file_cfg: Dict[str, Any],
+    key: str,
+    env_var: str,
+    default: Any,
+    env_file: Optional[Dict[str, str]] = None,
+) -> Any:
     if key in file_cfg and file_cfg[key] not in (None, ""):
         return file_cfg[key]
     env_val = os.environ.get(env_var)
     if env_val not in (None, ""):
         return env_val
+    # A deliberate export outranks the file, so this comes last.
+    if env_file:
+        file_val = env_file.get(env_var)
+        if file_val not in (None, ""):
+            return file_val
     return default
 
 
 def load_config(hermes_home: Optional[str] = None) -> SpectronConfig:
     """Load and resolve configuration from file, environment, then defaults."""
     file_cfg = _read_json(_config_path(hermes_home))
+    env_file = _read_env_file(hermes_home)
 
     def _int(value: Any, fallback: int) -> int:
         try:
@@ -108,9 +144,12 @@ def load_config(hermes_home: Optional[str] = None) -> SpectronConfig:
         write_frequency = "turn"
 
     return SpectronConfig(
-        endpoint=_pick(file_cfg, "endpoint", "SPECTRON_ENDPOINT", None),
-        context=_pick(file_cfg, "context", "SPECTRON_CONTEXT", None),
-        api_key=_pick(file_cfg, "api_key", "SPECTRON_API_KEY", None),
+        # endpoint/context also land in .env when installed via
+        # `hermes plugins install` (which prompts for requires_env), so they get
+        # the same fallback as the API key.
+        endpoint=_pick(file_cfg, "endpoint", "SPECTRON_ENDPOINT", None, env_file),
+        context=_pick(file_cfg, "context", "SPECTRON_CONTEXT", None, env_file),
+        api_key=_pick(file_cfg, "api_key", "SPECTRON_API_KEY", None, env_file),
         recall_mode=recall_mode,
         write_frequency=write_frequency,
         top_k=_int(_pick(file_cfg, "top_k", "SPECTRON_TOP_K", 5), 5),

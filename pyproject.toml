@@ -16,8 +16,11 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Intended Audience :: Developers",
 ]
+# Spectron ships only in surrealdb v3, which is still alpha — so this is
+# necessarily a pre-release dependency. Capped below 4 because v3 is the line
+# that carries Spectron.
 dependencies = [
-    "surrealdb>=3.0.0a4",
+    "surrealdb>=3.0.0a4,<4",
 ]
 
 [project.optional-dependencies]
@@ -25,21 +28,29 @@ dev = ["pytest>=8"]
 
 [project.urls]
 Homepage = "https://surrealdb.com/platform/spectron"
-Source = "https://github.com/surrealdb-dev/spectron-hermes"
+Source = "https://github.com/surrealdb/spectron-hermes"
 
-# Hermes discovers pip-installed plugins through this entry-point group.
-# The value points at the package; Hermes calls its `register(ctx)` (and can
-# also auto-instantiate the exported MemoryProvider subclass).
-[project.entry-points."hermes_agent.plugins"]
-spectron = "spectron_hermes"
+# Installs the package as a Hermes directory plugin at
+# $HERMES_HOME/plugins/spectron/. Hermes discovers memory providers only by
+# scanning that directory — there is no plugin entry-point hook for them — so a
+# plain `pip install` cannot register this provider on its own.
+[project.scripts]
+spectron-hermes-install = "spectron_hermes._install:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/spectron_hermes"]
 
-# Ship the plugin manifest alongside the code so the drop-in-directory
-# install path (copying the package into $HERMES_HOME/plugins/spectron/) works too.
+# Ship the manifest and post-install notes alongside the code so the
+# directory-plugin install path works from an installed wheel too.
 [tool.hatch.build.targets.wheel.force-include]
 "src/spectron_hermes/plugin.yaml" = "spectron_hermes/plugin.yaml"
+"src/spectron_hermes/after-install.md" = "spectron_hermes/after-install.md"
+
+# Our own dev/CI resolution only; [tool.uv] is not published in wheel metadata.
+# Without it, uv < 0.12.0 refuses the surrealdb pre-release when resolving this
+# project. Consumers need uv >= 0.12.0 or their own --prerelease=allow.
+[tool.uv]
+prerelease = "allow"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

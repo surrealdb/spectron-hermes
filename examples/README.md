@@ -31,10 +31,13 @@ python examples/live_session.py
 
 ## Using it inside Hermes
 
-You normally don't call the provider directly — Hermes does. Install the package,
-then:
+You normally don't call the provider directly — Hermes does. Note that
+`pip install` alone does not register the provider: Hermes discovers memory
+providers by scanning `$HERMES_HOME/plugins/`, so it has to be installed as a
+directory plugin named `spectron`:
 
 ```bash
+hermes plugins install surrealdb/spectron-hermes/src/spectron_hermes
 hermes memory setup      # choose "spectron"
 hermes memory status     # confirm active
 hermes                   # chat with Spectron-backed memory

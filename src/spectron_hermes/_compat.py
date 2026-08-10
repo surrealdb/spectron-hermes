@@ -78,6 +78,25 @@ class MemoryProvider(ABC):  # pragma: no cover - exercised only outside Hermes
     def on_pre_compress(self, messages: List[Dict[str, Any]]) -> str:
         return ""
 
+    def on_delegation(
+        self,
+        task: str,
+        result: str,
+        *,
+        child_session_id: str = "",
+        **kwargs,
+    ) -> None:
+        pass
+
+    def on_memory_write(
+        self,
+        action: str,
+        target: str,
+        content: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        pass
+
     def get_config_schema(self) -> List[Dict[str, Any]]:
         return []
 
