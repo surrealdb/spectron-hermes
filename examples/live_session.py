@@ -1,9 +1,9 @@
-"""Drive the AgentMemory provider against a LIVE AgentMemory instance.
+"""Drive the Agent Memory provider against a LIVE Agent Memory instance.
 
 Requires:
-  * ``pip install "surrealdb[memory]>=3.0.0b8"`` (v3 bundles AgentMemory)
-  * AgentMemory credentials in the environment:
-        export AGENT_MEMORY_ENDPOINT="https://your-instance.agent_memory.dev"
+  * ``pip install "surrealdb[memory]>=3.0.0b8"`` (v3 bundles Agent Memory)
+  * Agent Memory credentials in the environment:
+        export AGENT_MEMORY_ENDPOINT="https://your-instance.agent-memory.dev"
         export AGENT_MEMORY_CONTEXT="my-context"
         export AGENT_MEMORY_API_KEY="..."
 
@@ -12,7 +12,7 @@ Run:
     python examples/live_session.py
 
 This performs a real remember → recall round-trip, so it writes to your
-AgentMemory context. Use a throwaway context if you don't want the data to stick.
+Agent Memory context. Use a throwaway context if you don't want the data to stick.
 """
 
 from __future__ import annotations
@@ -20,15 +20,15 @@ from __future__ import annotations
 import sys
 import time
 
-from agent_memory_hermes.provider import AgentMemoryMemoryProvider
+from agent_memory_hermes.provider import AgentMemoryProvider
 
 
 def main() -> int:
-    provider = AgentMemoryMemoryProvider()
+    provider = AgentMemoryProvider()
 
     if not provider.is_available():
         print(
-            "AgentMemory is not configured. Set AGENT_MEMORY_ENDPOINT / AGENT_MEMORY_CONTEXT / "
+            "Agent Memory is not configured. Set AGENT_MEMORY_ENDPOINT / AGENT_MEMORY_CONTEXT / "
             "AGENT_MEMORY_API_KEY and `pip install 'surrealdb>=3.0.0a4'`.",
             file=sys.stderr,
         )
@@ -41,7 +41,7 @@ def main() -> int:
         "agent_memory_remember", {"text": "Tobie was promoted to CTO"}
     ))
 
-    # Give AgentMemory a moment to index the new memory before recalling.
+    # Give Agent Memory a moment to index the new memory before recalling.
     time.sleep(2)
 
     print("\nprefetch:\n", provider.prefetch("what is tobie's role?"))

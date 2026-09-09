@@ -1,8 +1,8 @@
-"""AgentMemory client construction and error-class resolution.
+"""Agent Memory client construction and error-class resolution.
 
 Imports are deliberately lazy: the SurrealDB SDK is only imported when we
 actually build a client, so importing this package never fails just because
-``surrealdb`` (>=3.0.0a4, which bundles AgentMemory) isn't installed.
+``surrealdb`` (>=3.0.0a4, which bundles Agent Memory) isn't installed.
 ``is_available()`` relies on this to do a cheap, dependency-only readiness check.
 """
 
@@ -14,7 +14,7 @@ from .config import AgentMemoryConfig
 
 
 def agent_memory_installed() -> bool:
-    """True if the AgentMemory SDK can be imported. No network, no client build."""
+    """True if the Agent Memory SDK can be imported. No network, no client build."""
     try:
         import importlib.util
 
@@ -24,7 +24,7 @@ def agent_memory_installed() -> bool:
 
 
 def agent_memory_errors() -> Tuple[type, ...]:
-    """Return the AgentMemory exception classes to treat as fail-open, broadest first.
+    """Return the Agent Memory exception classes to treat as fail-open, broadest first.
 
     Falls back to ``(Exception,)`` when the SDK isn't importable so callers can
     always use the result in an ``except`` clause.
@@ -38,7 +38,7 @@ def agent_memory_errors() -> Tuple[type, ...]:
 
 
 def is_auth_error(exc: BaseException) -> bool:
-    """True when the exception is a AgentMemory auth/authorization failure (401/403)."""
+    """True when the exception is an Agent Memory auth/authorization failure (401/403)."""
     try:
         from surrealdb.memory import (  # type: ignore
             MemoryAuthError,
@@ -51,7 +51,7 @@ def is_auth_error(exc: BaseException) -> bool:
 
 
 def build_client(config: AgentMemoryConfig) -> Any:
-    """Construct a blocking AgentMemory client from resolved config.
+    """Construct a blocking Agent Memory client from resolved config.
 
     Constructing the client does not perform network I/O — the SDK validates and
     stores connection settings; requests happen on the first method call.

@@ -1,5 +1,5 @@
 {
-  "endpoint": "https://your-instance.agent_memory.dev",
+  "endpoint": "https://your-instance.agent-memory.dev",
   "context": "my-context",
   "recall_mode": "hybrid",
   "write_frequency": "turn",

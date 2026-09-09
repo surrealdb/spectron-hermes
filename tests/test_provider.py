@@ -1,4 +1,4 @@
-"""Unit tests for the AgentMemory memory provider using a mock AgentMemory client.
+"""Unit tests for the Agent Memory provider using a mock Agent Memory client.
 
 No network and no real ``surrealdb[agent_memory]`` install are required — the tests
 inject a fake client by monkeypatching ``build_client``.
@@ -12,7 +12,7 @@ import pytest
 
 from agent_memory_hermes import provider as provider_mod
 from agent_memory_hermes.config import load_config, save_config_file
-from agent_memory_hermes.provider import AgentMemoryMemoryProvider
+from agent_memory_hermes.provider import AgentMemoryProvider
 from agent_memory_hermes.tools import to_jsonable
 
 
@@ -88,7 +88,7 @@ class FakeAgentMemory:
 def hermes_home(tmp_path):
     save_config_file(
         {
-            "endpoint": "https://example.agent_memory.dev",
+            "endpoint": "https://example.agent-memory.dev",
             "context": "test-ctx",
             "top_k": 3,
         },
@@ -106,9 +106,9 @@ def fake(monkeypatch):
 
 
 def _make_provider(hermes_home, fake, monkeypatch, **init_kwargs):
-    # API key is a secret sourced from the environment, not agent_memory.json.
+    # API key is a secret sourced from the environment, not agent-memory.json.
     monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk-test")
-    p = AgentMemoryMemoryProvider()
+    p = AgentMemoryProvider()
     p.initialize("sess-1", hermes_home=hermes_home, **init_kwargs)
     return p
 
@@ -119,7 +119,7 @@ def _make_provider(hermes_home, fake, monkeypatch, **init_kwargs):
 def test_config_chain_file_then_env(hermes_home, monkeypatch):
     monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk-env")
     cfg = load_config(hermes_home)
-    assert cfg.endpoint == "https://example.agent_memory.dev"  # from file
+    assert cfg.endpoint == "https://example.agent-memory.dev"  # from file
     assert cfg.context == "test-ctx"
     assert cfg.api_key == "sk-env"  # from env
     assert cfg.top_k == 3
@@ -129,7 +129,7 @@ def test_config_chain_file_then_env(hermes_home, monkeypatch):
 def test_is_available_requires_config_and_sdk(hermes_home, monkeypatch):
     monkeypatch.setattr(provider_mod, "agent_memory_installed", lambda: True)
     monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk")
-    p = AgentMemoryMemoryProvider()
+    p = AgentMemoryProvider()
     p._hermes_home = hermes_home
     assert p.is_available() is True
 
@@ -260,7 +260,7 @@ def test_circuit_breaker_disables_after_failures(hermes_home, monkeypatch):
     monkeypatch.setattr(provider_mod, "build_client", lambda cfg: client)
     monkeypatch.setattr(provider_mod, "agent_memory_installed", lambda: True)
     monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk")
-    p = AgentMemoryMemoryProvider()
+    p = AgentMemoryProvider()
     p.initialize("sess", hermes_home=hermes_home)
 
     for _ in range(provider_mod._FAILURE_THRESHOLD):
@@ -277,7 +277,7 @@ def test_fail_open_never_raises(hermes_home, monkeypatch):
     monkeypatch.setattr(provider_mod, "build_client", lambda cfg: client)
     monkeypatch.setattr(provider_mod, "agent_memory_installed", lambda: True)
     monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk")
-    p = AgentMemoryMemoryProvider()
+    p = AgentMemoryProvider()
     p.initialize("sess", hermes_home=hermes_home)
     # None of these should raise.
     assert p.prefetch("q") == ""
@@ -296,7 +296,7 @@ def test_to_jsonable_variants():
 
 
 def test_dispatch_kwargs_match_real_sdk():
-    """Guard the keyword names we pass against the real AgentMemory SDK.
+    """Guard the keyword names we pass against the real Agent Memory SDK.
 
     Skipped when `surrealdb` isn't installed (e.g. CI runs --no-deps). Catches
     drift like remember(scope=...) vs the SDK's remember(scopes=...).

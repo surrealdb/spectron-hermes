@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "agent-memory-hermes"
 version = "0.4.0"
-description = "SurrealDB AgentMemory memory provider for the Hermes Agent runtime"
+description = "SurrealDB Agent Memory provider for the Hermes Agent runtime"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "SurrealDB" }]
-keywords = ["surrealdb", "agent_memory", "hermes", "agent", "memory", "llm"]
+keywords = ["surrealdb", "agent-memory", "hermes", "agent", "memory", "llm"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",

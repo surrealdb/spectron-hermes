@@ -1,6 +1,6 @@
 name: agent_memory
 version: 0.3.0
-description: "SurrealDB AgentMemory memory — provenance-first, tri-temporal agent memory with semantic, lexical, graph and temporal recall."
+description: "SurrealDB Agent Memory — provenance-first, tri-temporal agent memory with semantic, lexical, graph and temporal recall."
 pip_dependencies:
   - surrealdb>=3.0.0a4
 hooks:

@@ -1,8 +1,8 @@
-"""Tool schemas exposed to the agent and dispatch to the AgentMemory SDK.
+"""Tool schemas exposed to the agent and dispatch to the Agent Memory SDK.
 
 Schemas use the OpenAI function-calling shape (``name`` / ``description`` /
 ``parameters``), matching Hermes' bundled memory providers. ``dispatch`` maps a
-tool call to a AgentMemory client method and returns a JSON-serialisable dict.
+tool call to an Agent Memory client method and returns a JSON-serialisable dict.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from .config import AgentMemoryConfig
 RECALL_SCHEMA: Dict[str, Any] = {
     "name": "agent_memory_recall",
     "description": (
-        "Search long-term memory in AgentMemory for facts relevant to a query, "
+        "Search long-term memory in Agent Memory for facts relevant to a query, "
         "ranked across semantic, lexical, graph and temporal signals. Use this "
         "to retrieve what is known about a person, project, or topic."
     ),
@@ -35,8 +35,8 @@ RECALL_SCHEMA: Dict[str, Any] = {
 REMEMBER_SCHEMA: Dict[str, Any] = {
     "name": "agent_memory_remember",
     "description": (
-        "Store a durable fact in AgentMemory memory. Prefer concise, self-contained "
-        "statements. AgentMemory versions facts tri-temporally and never overwrites "
+        "Store a durable fact in Agent Memory. Prefer concise, self-contained "
+        "statements. Agent Memory versions facts tri-temporally and never overwrites "
         "history."
     ),
     "parameters": {
@@ -55,7 +55,7 @@ REMEMBER_SCHEMA: Dict[str, Any] = {
 CONTEXT_SCHEMA: Dict[str, Any] = {
     "name": "agent_memory_context",
     "description": (
-        "Ask AgentMemory to synthesise an answer from memory for a question, rather "
+        "Ask Agent Memory to synthesise an answer from memory for a question, rather "
         "than returning raw hits. Use when you want a summarised, reasoned view."
     ),
     "parameters": {
@@ -138,7 +138,7 @@ TOOL_NAMES = frozenset(schema["name"] for schema in ALL_SCHEMAS)
 
 
 def to_jsonable(obj: Any) -> Any:
-    """Best-effort conversion of AgentMemory SDK response objects to plain JSON data."""
+    """Best-effort conversion of Agent Memory SDK response objects to plain JSON data."""
     if obj is None or isinstance(obj, (str, int, float, bool)):
         return obj
     if isinstance(obj, dict):
@@ -171,7 +171,7 @@ def dispatch(
     tool_name: str,
     args: Dict[str, Any],
 ) -> Any:
-    """Execute a single tool call against the AgentMemory client.
+    """Execute a single tool call against the Agent Memory client.
 
     Returns a JSON-serialisable result. Raises on unknown tool names and lets
     SDK exceptions propagate to the caller (the provider handles/logs them).

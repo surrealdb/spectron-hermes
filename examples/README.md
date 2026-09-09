@@ -2,9 +2,9 @@
 
 | File | What it shows | Needs |
 |---|---|---|
-| [`simulate_session.py`](simulate_session.py) | The full Hermes lifecycle (`is_available` → `initialize` → `prefetch` → tool calls → `sync_turn` → `on_session_end`) driven against a **fake in-memory AgentMemory client**. | Nothing but this package. |
-| [`live_session.py`](live_session.py) | The same flow against a **real AgentMemory instance** — a genuine remember → recall round-trip. | `surrealdb>=3.0.0a4` + AgentMemory credentials. |
-| [`agent_memory.json.example`](agent_memory.json.example) | Sample non-secret config (goes to `$HERMES_HOME/agent_memory.json`). | — |
+| [`simulate_session.py`](simulate_session.py) | The full Hermes lifecycle (`is_available` → `initialize` → `prefetch` → tool calls → `sync_turn` → `on_session_end`) driven against a **fake in-memory Agent Memory client**. | Nothing but this package. |
+| [`live_session.py`](live_session.py) | The same flow against a **real Agent Memory instance** — a genuine remember → recall round-trip. | `surrealdb>=3.0.0a4` + Agent Memory credentials. |
+| [`agent-memory.json.example`](agent-memory.json.example) | Sample non-secret config (goes to `$HERMES_HOME/agent-memory.json`). | — |
 | [`.env.example`](.env.example) | Sample environment / secrets. | — |
 
 ## Run the no-credentials demo
@@ -15,9 +15,9 @@ python examples/simulate_session.py
 ```
 
 This prints each step Hermes performs, so you can see exactly what the provider
-does around a turn without touching a real AgentMemory backend.
+does around a turn without touching a real Agent Memory backend.
 
-## Run against real AgentMemory
+## Run against real Agent Memory
 
 ```bash
 pip install -e . "surrealdb[memory]>=3.0.0b8"
@@ -26,7 +26,7 @@ set -a; . ./.env; set +a
 python examples/live_session.py
 ```
 
-> `live_session.py` writes to your AgentMemory context — use a throwaway context if
+> `live_session.py` writes to your Agent Memory context — use a throwaway context if
 > you don't want the demo data to persist.
 
 ## Using it inside Hermes

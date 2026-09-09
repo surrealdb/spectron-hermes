@@ -1,15 +1,15 @@
-"""Simulate a full Hermes session against the AgentMemory provider — no credentials.
+"""Simulate a full Hermes session against the Agent Memory provider — no credentials.
 
-This drives ``AgentMemoryMemoryProvider`` through the exact lifecycle Hermes uses
+This drives ``AgentMemoryProvider`` through the exact lifecycle Hermes uses
 (is_available → initialize → system_prompt_block → prefetch → handle_tool_call →
-sync_turn → on_session_end → shutdown), but with a fake in-memory AgentMemory
+sync_turn → on_session_end → shutdown), but with a fake in-memory Agent Memory
 client so it runs anywhere with nothing installed but this package.
 
 Run:
 
     python examples/simulate_session.py
 
-For the real thing against a live AgentMemory instance, see ``live_session.py``.
+For the real thing against a live Agent Memory instance, see ``live_session.py``.
 """
 
 from __future__ import annotations
@@ -17,10 +17,10 @@ from __future__ import annotations
 import os
 
 from agent_memory_hermes import provider as provider_mod
-from agent_memory_hermes.provider import AgentMemoryMemoryProvider
+from agent_memory_hermes.provider import AgentMemoryProvider
 
 
-# --- a tiny fake AgentMemory client (mirrors the methods the provider calls) ----
+# --- a tiny fake Agent Memory client (mirrors the methods the provider calls) ----
 
 
 class _Resp:
@@ -71,7 +71,7 @@ class FakeAgentMemory:
 
 
 def main() -> None:
-    # 1. Configure via env (Hermes would resolve these from agent_memory.json/.env).
+    # 1. Configure via env (Hermes would resolve these from agent-memory.json/.env).
     os.environ.setdefault("AGENT_MEMORY_ENDPOINT", "https://demo.agent_memory.local")
     os.environ.setdefault("AGENT_MEMORY_CONTEXT", "demo")
     os.environ.setdefault("AGENT_MEMORY_API_KEY", "sk-demo")
@@ -81,7 +81,7 @@ def main() -> None:
     provider_mod.build_client = lambda config: fake
     provider_mod.agent_memory_installed = lambda: True
 
-    provider = AgentMemoryMemoryProvider()
+    provider = AgentMemoryProvider()
 
     print("is_available:", provider.is_available())
 

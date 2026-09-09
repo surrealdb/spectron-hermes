@@ -1,9 +1,9 @@
-"""Configuration resolution for the AgentMemory memory provider.
+"""Configuration resolution for the Agent Memory provider.
 
-Resolution order for each field: value in ``$HERMES_HOME/agent_memory.json`` first,
+Resolution order for each field: value in ``$HERMES_HOME/agent-memory.json`` first,
 then the environment variable, then the built-in default. Secrets (the API key)
 are expected to live in the environment (Hermes writes ``secret: True`` fields to
-``.env``); non-secret settings are persisted to ``agent_memory.json`` by
+``.env``); non-secret settings are persisted to ``agent-memory.json`` by
 :func:`save_config_file`.
 """
 
@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-CONFIG_FILENAME = "agent_memory.json"
+CONFIG_FILENAME = "agent-memory.json"
 
 # Recognised recall strategies.
 RECALL_MODES = ("hybrid", "context", "tools")
@@ -34,7 +34,7 @@ def default_hermes_home(hermes_home: Optional[str] = None) -> str:
 
 @dataclass
 class AgentMemoryConfig:
-    """Resolved settings for a AgentMemory client + provider behaviour."""
+    """Resolved settings for an Agent Memory client + provider behaviour."""
 
     endpoint: Optional[str] = None
     context: Optional[str] = None
@@ -48,7 +48,7 @@ class AgentMemoryConfig:
     max_retries: int = 3
 
     def is_configured(self) -> bool:
-        """True when the minimum needed to talk to AgentMemory is present."""
+        """True when the minimum needed to talk to Agent Memory is present."""
         return bool(self.endpoint and self.context and self.api_key)
 
 
@@ -124,7 +124,7 @@ def load_config(hermes_home: Optional[str] = None) -> AgentMemoryConfig:
     )
 
 
-# Non-secret keys persisted to agent_memory.json. The API key is intentionally
+# Non-secret keys persisted to agent-memory.json. The API key is intentionally
 # excluded — it belongs in the environment / .env.
 _PERSISTED_KEYS = (
     "endpoint",
@@ -140,7 +140,7 @@ _PERSISTED_KEYS = (
 
 
 def save_config_file(values: Dict[str, Any], hermes_home: Optional[str]) -> Path:
-    """Persist non-secret settings to ``$HERMES_HOME/agent_memory.json`` atomically."""
+    """Persist non-secret settings to ``$HERMES_HOME/agent-memory.json`` atomically."""
     path = _config_path(hermes_home)
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -174,13 +174,13 @@ def config_schema() -> List[Dict[str, Any]]:
         },
         {
             "key": "endpoint",
-            "description": "AgentMemory endpoint origin, e.g. https://your-instance.agent_memory.dev",
+            "description": "Agent Memory endpoint origin, e.g. https://your-instance.agent-memory.dev",
             "required": True,
             "env_var": "AGENT_MEMORY_ENDPOINT",
         },
         {
             "key": "context",
-            "description": "AgentMemory context this agent's memory is pinned to",
+            "description": "Agent Memory context this agent's memory is pinned to",
             "required": True,
             "env_var": "AGENT_MEMORY_CONTEXT",
         },

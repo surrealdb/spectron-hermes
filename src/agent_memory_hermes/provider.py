@@ -1,9 +1,9 @@
-"""The AgentMemory memory provider for Hermes.
+"""The Agent Memory provider for Hermes.
 
-Implements Hermes' ``MemoryProvider`` interface backed by SurrealDB AgentMemory:
+Implements Hermes' ``MemoryProvider`` interface backed by SurrealDB Agent Memory:
 
 * ``prefetch``    — recall relevant memory before each turn
-* ``sync_turn``   — write the completed turn back to AgentMemory (non-blocking)
+* ``sync_turn``   — write the completed turn back to Agent Memory (non-blocking)
 * ``on_session_end`` — trigger background consolidation
 * six explicit tools (``agent_memory_recall`` / ``remember`` / ``context`` /
   ``forget`` / ``reflect`` / ``upload``)
@@ -48,8 +48,8 @@ _PREFETCH_BUDGET_CHARS = 2000
 _STOP = object()
 
 
-class AgentMemoryMemoryProvider(MemoryProvider):
-    """Hermes memory provider backed by SurrealDB AgentMemory."""
+class AgentMemoryProvider(MemoryProvider):
+    """Hermes memory provider backed by SurrealDB Agent Memory."""
 
     def __init__(self) -> None:
         self._config: AgentMemoryConfig = AgentMemoryConfig()
@@ -98,7 +98,7 @@ class AgentMemoryMemoryProvider(MemoryProvider):
         try:
             self._client = build_client(self._config)
         except Exception as exc:  # pragma: no cover - depends on SDK/env
-            logger.warning("AgentMemory client init failed; memory disabled: %s", exc)
+            logger.warning("Agent Memory client init failed; memory disabled: %s", exc)
             self._client = None
             self._disabled = True
             return
@@ -126,7 +126,7 @@ class AgentMemoryMemoryProvider(MemoryProvider):
 
     def _record_fail(self, where: str, exc: BaseException) -> None:
         if is_auth_error(exc):
-            logger.warning("AgentMemory auth error during %s; disabling memory: %s", where, exc)
+            logger.warning("Agent Memory auth error during %s; disabling memory: %s", where, exc)
             self._disabled = True
             return
         self._consecutive_failures += 1
@@ -138,7 +138,7 @@ class AgentMemoryMemoryProvider(MemoryProvider):
             exc,
         )
         if self._consecutive_failures >= _FAILURE_THRESHOLD:
-            logger.warning("AgentMemory failure threshold reached; disabling memory for session.")
+            logger.warning("Agent Memory failure threshold reached; disabling memory for session.")
             self._disabled = True
 
     def _active(self) -> bool:
@@ -207,7 +207,7 @@ class AgentMemoryMemoryProvider(MemoryProvider):
         if not items:
             return ""
 
-        lines = ["## Recalled from memory (AgentMemory)"]
+        lines = ["## Recalled from memory (Agent Memory)"]
         for item in items:
             text = _item_text(item)
             if text:
@@ -309,7 +309,7 @@ class AgentMemoryMemoryProvider(MemoryProvider):
             )
         if not self._active():
             return json.dumps(
-                {"error": "AgentMemory memory is unavailable.", "provider": self.name}
+                {"error": "Agent Memory is unavailable.", "provider": self.name}
             )
         try:
             result = _tools.dispatch(

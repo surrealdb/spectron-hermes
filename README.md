@@ -1,14 +1,14 @@
-# AgentMemory ⇄ Hermes Agent
+# Agent Memory ⇄ Hermes Agent
 
 A [Hermes Agent](https://github.com/NousResearch/hermes-agent) **memory provider**
-backed by [SurrealDB AgentMemory](https://surrealdb.com/agent-memory) —
+backed by [SurrealDB Agent Memory](https://surrealdb.com/agent-memory) —
 provenance-first, tri-temporal agent memory with semantic, lexical, graph and
 temporal recall.
 
 Once installed and selected, the agent automatically:
 
 - **recalls** relevant memories before every turn,
-- **writes** each completed turn back to AgentMemory (asynchronously),
+- **writes** each completed turn back to Agent Memory (asynchronously),
 - **consolidates** memory when a session ends,
 
 and gains six explicit memory tools it can call directly.
@@ -18,8 +18,8 @@ and gains six explicit memory tools it can call directly.
 - Python 3.10+
 - A running [Hermes Agent](https://github.com/NousResearch/hermes-agent) install
   (verified against Hermes Agent 0.18.2)
-- AgentMemory access (endpoint, context, API key). AgentMemory is in
-  [invite-only preview](https://surrealdb.com/pricing/agent_memory).
+- Agent Memory access (endpoint, context, API key). Agent Memory is in
+  [invite-only preview](https://surrealdb.com/pricing).
 
 ## Install
 
@@ -27,7 +27,7 @@ and gains six explicit memory tools it can call directly.
 pip install agent-memory-hermes
 ```
 
-This pulls in the SurrealDB SDK (`surrealdb` v3, which bundles AgentMemory) and
+This pulls in the SurrealDB SDK (`surrealdb` v3, which bundles Agent Memory) and
 registers the plugin with Hermes via the `hermes_agent.plugins` entry point.
 
 <details>
@@ -45,7 +45,7 @@ Provide credentials via the environment (the API key is a secret and belongs in
 
 ```bash
 export AGENT_MEMORY_API_KEY="..."
-export AGENT_MEMORY_ENDPOINT="https://your-instance.agent_memory.dev"
+export AGENT_MEMORY_ENDPOINT="https://your-instance.agent-memory.dev"
 export AGENT_MEMORY_CONTEXT="my-context"
 ```
 
@@ -57,7 +57,7 @@ hermes memory status     # confirm it is active
 hermes                   # run a session with AgentMemory-backed memory
 ```
 
-Non-secret settings are written to `$HERMES_HOME/agent_memory.json`.
+Non-secret settings are written to `$HERMES_HOME/agent-memory.json`.
 
 ## Configuration
 
@@ -65,7 +65,7 @@ Non-secret settings are written to `$HERMES_HOME/agent_memory.json`.
 |---|---|---|---|
 | `api_key` | `AGENT_MEMORY_API_KEY` | — | **secret**, required (stored in `.env`) |
 | `endpoint` | `AGENT_MEMORY_ENDPOINT` | — | required, origin with no trailing slash |
-| `context` | `AGENT_MEMORY_CONTEXT` | — | required; AgentMemory pins a client to one context |
+| `context` | `AGENT_MEMORY_CONTEXT` | — | required; Agent Memory pins a client to one context |
 | `recall_mode` | `AGENT_MEMORY_RECALL_MODE` | `hybrid` | `hybrid` \| `context` \| `tools` |
 | `write_frequency` | `AGENT_MEMORY_WRITE_FREQUENCY` | `turn` | `turn` \| `session` |
 | `top_k` | `AGENT_MEMORY_TOP_K` | `5` | memories recalled per turn |
@@ -77,7 +77,7 @@ the model recall explicitly via `agent_memory_recall` / `agent_memory_context`.
 
 ## Tools exposed to the agent
 
-| Tool | AgentMemory call | Purpose |
+| Tool | Agent Memory call | Purpose |
 |---|---|---|
 | `agent_memory_recall(query, k?)` | `recall` | Search memory (semantic/lexical/graph/temporal). |
 | `agent_memory_remember(text, scope?)` | `remember` | Store a durable fact. |
@@ -91,7 +91,7 @@ the model recall explicitly via `agent_memory_recall` / `agent_memory_context`.
 The provider is built to never destabilise the agent:
 
 - Writes run on a background daemon thread — turns never block on I/O.
-- Every AgentMemory call is wrapped; failures are logged and degrade to empty
+- Every Agent Memory call is wrapped; failures are logged and degrade to empty
   results rather than raising into the agent loop (**fail open**).
 - After repeated failures (or an auth error) a **circuit breaker** disables
   memory for the rest of the session.
@@ -103,7 +103,7 @@ pip install -e ".[dev]"
 pytest
 ```
 
-Tests use a mock AgentMemory client and need neither a live server nor the
+Tests use a mock Agent Memory client and need neither a live server nor the
 `surrealdb` SDK installed.
 
 ## License
