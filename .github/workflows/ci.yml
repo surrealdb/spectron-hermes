@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # The Spectron SDK (surrealdb[spectron]) is an invite-only preview and is
+      # The AgentMemory SDK (surrealdb[agent_memory]) is an invite-only preview and is
       # not required to test this integration: the provider imports it lazily and
       # the tests mock the client. Installing --no-deps keeps CI deterministic
       # while still exercising all of our code.

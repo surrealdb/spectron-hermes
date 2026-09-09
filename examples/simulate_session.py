@@ -1,26 +1,26 @@
-"""Simulate a full Hermes session against the Spectron provider — no credentials.
+"""Simulate a full Hermes session against the AgentMemory provider — no credentials.
 
-This drives ``SpectronMemoryProvider`` through the exact lifecycle Hermes uses
+This drives ``AgentMemoryMemoryProvider`` through the exact lifecycle Hermes uses
 (is_available → initialize → system_prompt_block → prefetch → handle_tool_call →
-sync_turn → on_session_end → shutdown), but with a fake in-memory Spectron
+sync_turn → on_session_end → shutdown), but with a fake in-memory AgentMemory
 client so it runs anywhere with nothing installed but this package.
 
 Run:
 
     python examples/simulate_session.py
 
-For the real thing against a live Spectron instance, see ``live_session.py``.
+For the real thing against a live AgentMemory instance, see ``live_session.py``.
 """
 
 from __future__ import annotations
 
 import os
 
-from spectron_hermes import provider as provider_mod
-from spectron_hermes.provider import SpectronMemoryProvider
+from agent_memory_hermes import provider as provider_mod
+from agent_memory_hermes.provider import AgentMemoryMemoryProvider
 
 
-# --- a tiny fake Spectron client (mirrors the methods the provider calls) ----
+# --- a tiny fake AgentMemory client (mirrors the methods the provider calls) ----
 
 
 class _Resp:
@@ -36,7 +36,7 @@ class _Docs:
         return _Resp(document_id="doc:1", title=title or path)
 
 
-class FakeSpectron:
+class FakeAgentMemory:
     """In-memory stand-in — stores 'facts' and echoes them back on recall."""
 
     def __init__(self):
@@ -71,17 +71,17 @@ class FakeSpectron:
 
 
 def main() -> None:
-    # 1. Configure via env (Hermes would resolve these from spectron.json/.env).
-    os.environ.setdefault("SPECTRON_ENDPOINT", "https://demo.spectron.local")
-    os.environ.setdefault("SPECTRON_CONTEXT", "demo")
-    os.environ.setdefault("SPECTRON_API_KEY", "sk-demo")
+    # 1. Configure via env (Hermes would resolve these from agent_memory.json/.env).
+    os.environ.setdefault("AGENT_MEMORY_ENDPOINT", "https://demo.agent_memory.local")
+    os.environ.setdefault("AGENT_MEMORY_CONTEXT", "demo")
+    os.environ.setdefault("AGENT_MEMORY_API_KEY", "sk-demo")
 
     # Inject the fake client instead of building a real one.
-    fake = FakeSpectron()
+    fake = FakeAgentMemory()
     provider_mod.build_client = lambda config: fake
-    provider_mod.spectron_installed = lambda: True
+    provider_mod.agent_memory_installed = lambda: True
 
-    provider = SpectronMemoryProvider()
+    provider = AgentMemoryMemoryProvider()
 
     print("is_available:", provider.is_available())
 
@@ -91,7 +91,7 @@ def main() -> None:
 
     # 3. The agent stores a fact via a tool call.
     print("\nremember →", provider.handle_tool_call(
-        "spectron_remember", {"text": "Tobie was promoted to CTO"}
+        "agent_memory_remember", {"text": "Tobie was promoted to CTO"}
     ))
 
     # 4. Before the next turn, Hermes prefetches relevant memory.
@@ -102,13 +102,13 @@ def main() -> None:
     provider._write_q.join()  # example-only: wait for the async write to land
 
     print("\nrecall after turn →", provider.handle_tool_call(
-        "spectron_recall", {"query": "tobie"}
+        "agent_memory_recall", {"query": "tobie"}
     ))
     print("\ncontext →", provider.handle_tool_call(
-        "spectron_context", {"query": "summarise what you know"}
+        "agent_memory_context", {"query": "summarise what you know"}
     ))
     print("\nreflect →", provider.handle_tool_call(
-        "spectron_reflect", {"query": "this session", "persist": True}
+        "agent_memory_reflect", {"query": "this session", "persist": True}
     ))
 
     # 6. Session end triggers background consolidation.

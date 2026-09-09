@@ -3,43 +3,43 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "spectron-hermes"
-version = "0.3.0"
-description = "SurrealDB Spectron memory provider for the Hermes Agent runtime"
+name = "agent-memory-hermes"
+version = "0.4.0"
+description = "SurrealDB AgentMemory memory provider for the Hermes Agent runtime"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "SurrealDB" }]
-keywords = ["surrealdb", "spectron", "hermes", "agent", "memory", "llm"]
+keywords = ["surrealdb", "agent_memory", "hermes", "agent", "memory", "llm"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
     "Intended Audience :: Developers",
 ]
 dependencies = [
-    "surrealdb>=3.0.0a4",
+    "surrealdb[memory]>=3.0.0b8",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
 
 [project.urls]
-Homepage = "https://surrealdb.com/platform/spectron"
-Source = "https://github.com/surrealdb-dev/spectron-hermes"
+Homepage = "https://surrealdb.com/agent-memory"
+Source = "https://github.com/surrealdb/agent-memory-hermes"
 
 # Hermes discovers pip-installed plugins through this entry-point group.
 # The value points at the package; Hermes calls its `register(ctx)` (and can
 # also auto-instantiate the exported MemoryProvider subclass).
 [project.entry-points."hermes_agent.plugins"]
-spectron = "spectron_hermes"
+agent_memory = "agent_memory_hermes"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/spectron_hermes"]
+packages = ["src/agent_memory_hermes"]
 
 # Ship the plugin manifest alongside the code so the drop-in-directory
-# install path (copying the package into $HERMES_HOME/plugins/spectron/) works too.
+# install path (copying the package into $HERMES_HOME/plugins/agent_memory/) works too.
 [tool.hatch.build.targets.wheel.force-include]
-"src/spectron_hermes/plugin.yaml" = "spectron_hermes/plugin.yaml"
+"src/agent_memory_hermes/plugin.yaml" = "agent_memory_hermes/plugin.yaml"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

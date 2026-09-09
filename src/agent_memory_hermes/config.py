@@ -1,9 +1,9 @@
-"""Configuration resolution for the Spectron memory provider.
+"""Configuration resolution for the AgentMemory memory provider.
 
-Resolution order for each field: value in ``$HERMES_HOME/spectron.json`` first,
+Resolution order for each field: value in ``$HERMES_HOME/agent_memory.json`` first,
 then the environment variable, then the built-in default. Secrets (the API key)
 are expected to live in the environment (Hermes writes ``secret: True`` fields to
-``.env``); non-secret settings are persisted to ``spectron.json`` by
+``.env``); non-secret settings are persisted to ``agent_memory.json`` by
 :func:`save_config_file`.
 """
 
@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-CONFIG_FILENAME = "spectron.json"
+CONFIG_FILENAME = "agent_memory.json"
 
 # Recognised recall strategies.
 RECALL_MODES = ("hybrid", "context", "tools")
@@ -33,8 +33,8 @@ def default_hermes_home(hermes_home: Optional[str] = None) -> str:
 
 
 @dataclass
-class SpectronConfig:
-    """Resolved settings for a Spectron client + provider behaviour."""
+class AgentMemoryConfig:
+    """Resolved settings for a AgentMemory client + provider behaviour."""
 
     endpoint: Optional[str] = None
     context: Optional[str] = None
@@ -48,7 +48,7 @@ class SpectronConfig:
     max_retries: int = 3
 
     def is_configured(self) -> bool:
-        """True when the minimum needed to talk to Spectron is present."""
+        """True when the minimum needed to talk to AgentMemory is present."""
         return bool(self.endpoint and self.context and self.api_key)
 
 
@@ -74,7 +74,7 @@ def _pick(file_cfg: Dict[str, Any], key: str, env_var: str, default: Any) -> Any
     return default
 
 
-def load_config(hermes_home: Optional[str] = None) -> SpectronConfig:
+def load_config(hermes_home: Optional[str] = None) -> AgentMemoryConfig:
     """Load and resolve configuration from file, environment, then defaults."""
     file_cfg = _read_json(_config_path(hermes_home))
 
@@ -97,34 +97,34 @@ def load_config(hermes_home: Optional[str] = None) -> SpectronConfig:
             return value.strip().lower() in ("1", "true", "yes", "on")
         return fallback
 
-    recall_mode = str(_pick(file_cfg, "recall_mode", "SPECTRON_RECALL_MODE", "hybrid"))
+    recall_mode = str(_pick(file_cfg, "recall_mode", "AGENT_MEMORY_RECALL_MODE", "hybrid"))
     if recall_mode not in RECALL_MODES:
         recall_mode = "hybrid"
 
     write_frequency = str(
-        _pick(file_cfg, "write_frequency", "SPECTRON_WRITE_FREQUENCY", "turn")
+        _pick(file_cfg, "write_frequency", "AGENT_MEMORY_WRITE_FREQUENCY", "turn")
     )
     if write_frequency not in WRITE_FREQUENCIES:
         write_frequency = "turn"
 
-    return SpectronConfig(
-        endpoint=_pick(file_cfg, "endpoint", "SPECTRON_ENDPOINT", None),
-        context=_pick(file_cfg, "context", "SPECTRON_CONTEXT", None),
-        api_key=_pick(file_cfg, "api_key", "SPECTRON_API_KEY", None),
+    return AgentMemoryConfig(
+        endpoint=_pick(file_cfg, "endpoint", "AGENT_MEMORY_ENDPOINT", None),
+        context=_pick(file_cfg, "context", "AGENT_MEMORY_CONTEXT", None),
+        api_key=_pick(file_cfg, "api_key", "AGENT_MEMORY_API_KEY", None),
         recall_mode=recall_mode,
         write_frequency=write_frequency,
-        top_k=_int(_pick(file_cfg, "top_k", "SPECTRON_TOP_K", 5), 5),
-        default_scope=_pick(file_cfg, "default_scope", "SPECTRON_DEFAULT_SCOPE", None),
+        top_k=_int(_pick(file_cfg, "top_k", "AGENT_MEMORY_TOP_K", 5), 5),
+        default_scope=_pick(file_cfg, "default_scope", "AGENT_MEMORY_DEFAULT_SCOPE", None),
         consolidate_on_end=_bool(
-            _pick(file_cfg, "consolidate_on_end", "SPECTRON_CONSOLIDATE_ON_END", True),
+            _pick(file_cfg, "consolidate_on_end", "AGENT_MEMORY_CONSOLIDATE_ON_END", True),
             True,
         ),
-        timeout=_float(_pick(file_cfg, "timeout", "SPECTRON_TIMEOUT", 30.0), 30.0),
-        max_retries=_int(_pick(file_cfg, "max_retries", "SPECTRON_MAX_RETRIES", 3), 3),
+        timeout=_float(_pick(file_cfg, "timeout", "AGENT_MEMORY_TIMEOUT", 30.0), 30.0),
+        max_retries=_int(_pick(file_cfg, "max_retries", "AGENT_MEMORY_MAX_RETRIES", 3), 3),
     )
 
 
-# Non-secret keys persisted to spectron.json. The API key is intentionally
+# Non-secret keys persisted to agent_memory.json. The API key is intentionally
 # excluded — it belongs in the environment / .env.
 _PERSISTED_KEYS = (
     "endpoint",
@@ -140,7 +140,7 @@ _PERSISTED_KEYS = (
 
 
 def save_config_file(values: Dict[str, Any], hermes_home: Optional[str]) -> Path:
-    """Persist non-secret settings to ``$HERMES_HOME/spectron.json`` atomically."""
+    """Persist non-secret settings to ``$HERMES_HOME/agent_memory.json`` atomically."""
     path = _config_path(hermes_home)
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -149,7 +149,7 @@ def save_config_file(values: Dict[str, Any], hermes_home: Optional[str]) -> Path
         if key in values and values[key] not in (None, ""):
             existing[key] = values[key]
 
-    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=".spectron-", suffix=".json")
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=".agent_memory-", suffix=".json")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
             json.dump(existing, fh, indent=2, sort_keys=True)
@@ -166,47 +166,47 @@ def config_schema() -> List[Dict[str, Any]]:
     return [
         {
             "key": "api_key",
-            "description": "Spectron API key",
+            "description": "AgentMemory API key",
             "secret": True,
             "required": True,
-            "env_var": "SPECTRON_API_KEY",
-            "url": "https://surrealdb.com/platform/spectron",
+            "env_var": "AGENT_MEMORY_API_KEY",
+            "url": "https://surrealdb.com/agent-memory",
         },
         {
             "key": "endpoint",
-            "description": "Spectron endpoint origin, e.g. https://your-instance.spectron.dev",
+            "description": "AgentMemory endpoint origin, e.g. https://your-instance.agent_memory.dev",
             "required": True,
-            "env_var": "SPECTRON_ENDPOINT",
+            "env_var": "AGENT_MEMORY_ENDPOINT",
         },
         {
             "key": "context",
-            "description": "Spectron context this agent's memory is pinned to",
+            "description": "AgentMemory context this agent's memory is pinned to",
             "required": True,
-            "env_var": "SPECTRON_CONTEXT",
+            "env_var": "AGENT_MEMORY_CONTEXT",
         },
         {
             "key": "recall_mode",
             "description": "How memory is surfaced each turn",
             "default": "hybrid",
             "choices": list(RECALL_MODES),
-            "env_var": "SPECTRON_RECALL_MODE",
+            "env_var": "AGENT_MEMORY_RECALL_MODE",
         },
         {
             "key": "write_frequency",
-            "description": "When completed turns are written back to Spectron",
+            "description": "When completed turns are written back to AgentMemory",
             "default": "turn",
             "choices": list(WRITE_FREQUENCIES),
-            "env_var": "SPECTRON_WRITE_FREQUENCY",
+            "env_var": "AGENT_MEMORY_WRITE_FREQUENCY",
         },
         {
             "key": "top_k",
             "description": "Number of memories to recall per turn",
             "default": 5,
-            "env_var": "SPECTRON_TOP_K",
+            "env_var": "AGENT_MEMORY_TOP_K",
         },
         {
             "key": "default_scope",
             "description": "Optional default scope for writes / lens for reads, e.g. user/tobie",
-            "env_var": "SPECTRON_DEFAULT_SCOPE",
+            "env_var": "AGENT_MEMORY_DEFAULT_SCOPE",
         },
     ]

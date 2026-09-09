@@ -1,8 +1,8 @@
-"""Tool schemas exposed to the agent and dispatch to the Spectron SDK.
+"""Tool schemas exposed to the agent and dispatch to the AgentMemory SDK.
 
 Schemas use the OpenAI function-calling shape (``name`` / ``description`` /
 ``parameters``), matching Hermes' bundled memory providers. ``dispatch`` maps a
-tool call to a Spectron client method and returns a JSON-serialisable dict.
+tool call to a AgentMemory client method and returns a JSON-serialisable dict.
 """
 
 from __future__ import annotations
@@ -10,12 +10,12 @@ from __future__ import annotations
 import dataclasses
 from typing import Any, Dict, List, Optional
 
-from .config import SpectronConfig
+from .config import AgentMemoryConfig
 
 RECALL_SCHEMA: Dict[str, Any] = {
-    "name": "spectron_recall",
+    "name": "agent_memory_recall",
     "description": (
-        "Search long-term memory in Spectron for facts relevant to a query, "
+        "Search long-term memory in AgentMemory for facts relevant to a query, "
         "ranked across semantic, lexical, graph and temporal signals. Use this "
         "to retrieve what is known about a person, project, or topic."
     ),
@@ -33,10 +33,10 @@ RECALL_SCHEMA: Dict[str, Any] = {
 }
 
 REMEMBER_SCHEMA: Dict[str, Any] = {
-    "name": "spectron_remember",
+    "name": "agent_memory_remember",
     "description": (
-        "Store a durable fact in Spectron memory. Prefer concise, self-contained "
-        "statements. Spectron versions facts tri-temporally and never overwrites "
+        "Store a durable fact in AgentMemory memory. Prefer concise, self-contained "
+        "statements. AgentMemory versions facts tri-temporally and never overwrites "
         "history."
     ),
     "parameters": {
@@ -53,9 +53,9 @@ REMEMBER_SCHEMA: Dict[str, Any] = {
 }
 
 CONTEXT_SCHEMA: Dict[str, Any] = {
-    "name": "spectron_context",
+    "name": "agent_memory_context",
     "description": (
-        "Ask Spectron to synthesise an answer from memory for a question, rather "
+        "Ask AgentMemory to synthesise an answer from memory for a question, rather "
         "than returning raw hits. Use when you want a summarised, reasoned view."
     ),
     "parameters": {
@@ -72,7 +72,7 @@ CONTEXT_SCHEMA: Dict[str, Any] = {
 }
 
 FORGET_SCHEMA: Dict[str, Any] = {
-    "name": "spectron_forget",
+    "name": "agent_memory_forget",
     "description": (
         "Forget memories matching a query. By default this supersedes them "
         "(kept as history, marked no longer valid). Set purge=true to hard-delete."
@@ -91,7 +91,7 @@ FORGET_SCHEMA: Dict[str, Any] = {
 }
 
 REFLECT_SCHEMA: Dict[str, Any] = {
-    "name": "spectron_reflect",
+    "name": "agent_memory_reflect",
     "description": (
         "Run a reflection over memory to derive higher-level insights about a "
         "topic. Set persist=true to write the reflection back into memory."
@@ -110,9 +110,9 @@ REFLECT_SCHEMA: Dict[str, Any] = {
 }
 
 UPLOAD_SCHEMA: Dict[str, Any] = {
-    "name": "spectron_upload",
+    "name": "agent_memory_upload",
     "description": (
-        "Ingest a document from a local file path into Spectron's knowledge "
+        "Ingest a document from a local file path into AgentMemory's knowledge "
         "memory so its contents become recallable."
     ),
     "parameters": {
@@ -138,7 +138,7 @@ TOOL_NAMES = frozenset(schema["name"] for schema in ALL_SCHEMAS)
 
 
 def to_jsonable(obj: Any) -> Any:
-    """Best-effort conversion of Spectron SDK response objects to plain JSON data."""
+    """Best-effort conversion of AgentMemory SDK response objects to plain JSON data."""
     if obj is None or isinstance(obj, (str, int, float, bool)):
         return obj
     if isinstance(obj, dict):
@@ -166,39 +166,39 @@ def to_jsonable(obj: Any) -> Any:
 
 def dispatch(
     client: Any,
-    config: SpectronConfig,
+    config: AgentMemoryConfig,
     default_scope: Optional[str],
     tool_name: str,
     args: Dict[str, Any],
 ) -> Any:
-    """Execute a single tool call against the Spectron client.
+    """Execute a single tool call against the AgentMemory client.
 
     Returns a JSON-serialisable result. Raises on unknown tool names and lets
     SDK exceptions propagate to the caller (the provider handles/logs them).
     """
     args = args or {}
 
-    if tool_name == "spectron_recall":
+    if tool_name == "agent_memory_recall":
         k = args.get("k") or config.top_k
         return to_jsonable(client.recall(args["query"], k=k))
 
-    if tool_name == "spectron_remember":
+    if tool_name == "agent_memory_remember":
         scope = args.get("scope") or default_scope
         if scope:
             return to_jsonable(client.remember(args["text"], scopes=scope))
         return to_jsonable(client.remember(args["text"]))
 
-    if tool_name == "spectron_context":
+    if tool_name == "agent_memory_context":
         k = args.get("k") or config.top_k
         return to_jsonable(client.query_context(args["query"], k=k))
 
-    if tool_name == "spectron_forget":
+    if tool_name == "agent_memory_forget":
         return to_jsonable(client.forget(args["query"], purge=bool(args.get("purge", False))))
 
-    if tool_name == "spectron_reflect":
+    if tool_name == "agent_memory_reflect":
         return to_jsonable(client.reflect(args["query"], persist=bool(args.get("persist", False))))
 
-    if tool_name == "spectron_upload":
+    if tool_name == "agent_memory_upload":
         title = args.get("title")
         if title:
             return to_jsonable(client.documents.upload(args["path"], title=title))

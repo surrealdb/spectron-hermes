@@ -1,11 +1,11 @@
-"""The Spectron memory provider for Hermes.
+"""The AgentMemory memory provider for Hermes.
 
-Implements Hermes' ``MemoryProvider`` interface backed by SurrealDB Spectron:
+Implements Hermes' ``MemoryProvider`` interface backed by SurrealDB AgentMemory:
 
 * ``prefetch``    — recall relevant memory before each turn
-* ``sync_turn``   — write the completed turn back to Spectron (non-blocking)
+* ``sync_turn``   — write the completed turn back to AgentMemory (non-blocking)
 * ``on_session_end`` — trigger background consolidation
-* six explicit tools (``spectron_recall`` / ``remember`` / ``context`` /
+* six explicit tools (``agent_memory_recall`` / ``remember`` / ``context`` /
   ``forget`` / ``reflect`` / ``upload``)
 
 Design rules borrowed from the Honcho/Cognee reference providers:
@@ -35,10 +35,10 @@ except Exception:  # pragma: no cover
     from ._compat import MemoryProvider
 
 from . import tools as _tools
-from .client import build_client, is_auth_error, spectron_errors, spectron_installed
-from .config import SpectronConfig, config_schema, load_config, save_config_file
+from .client import build_client, is_auth_error, agent_memory_errors, agent_memory_installed
+from .config import AgentMemoryConfig, config_schema, load_config, save_config_file
 
-logger = logging.getLogger("spectron_hermes")
+logger = logging.getLogger("agent_memory_hermes")
 
 # Disable the provider for the session after this many consecutive failures.
 _FAILURE_THRESHOLD = 3
@@ -48,11 +48,11 @@ _PREFETCH_BUDGET_CHARS = 2000
 _STOP = object()
 
 
-class SpectronMemoryProvider(MemoryProvider):
-    """Hermes memory provider backed by SurrealDB Spectron."""
+class AgentMemoryMemoryProvider(MemoryProvider):
+    """Hermes memory provider backed by SurrealDB AgentMemory."""
 
     def __init__(self) -> None:
-        self._config: SpectronConfig = SpectronConfig()
+        self._config: AgentMemoryConfig = AgentMemoryConfig()
         self._client: Any = None
         self._hermes_home: str = ""
         self._session_id: str = ""
@@ -64,19 +64,19 @@ class SpectronMemoryProvider(MemoryProvider):
 
         self._consecutive_failures = 0
         self._disabled = False
-        self._errors = spectron_errors()
+        self._errors = agent_memory_errors()
 
     # -- identity ------------------------------------------------------------
 
     @property
     def name(self) -> str:
-        return "spectron"
+        return "agent_memory"
 
     # -- readiness -----------------------------------------------------------
 
     def is_available(self) -> bool:
         """Config- and dependency-only readiness check. No network calls."""
-        if not spectron_installed():
+        if not agent_memory_installed():
             return False
         cfg = load_config(self._hermes_home or None)
         return cfg.is_configured()
@@ -87,7 +87,7 @@ class SpectronMemoryProvider(MemoryProvider):
         self._session_id = session_id
         self._hermes_home = kwargs.get("hermes_home", "") or self._hermes_home
         self._config = load_config(self._hermes_home or None)
-        self._errors = spectron_errors()
+        self._errors = agent_memory_errors()
 
         user_id = kwargs.get("user_id") or kwargs.get("user_id_alt")
         self._default_scope = self._config.default_scope or (
@@ -98,7 +98,7 @@ class SpectronMemoryProvider(MemoryProvider):
         try:
             self._client = build_client(self._config)
         except Exception as exc:  # pragma: no cover - depends on SDK/env
-            logger.warning("Spectron client init failed; memory disabled: %s", exc)
+            logger.warning("AgentMemory client init failed; memory disabled: %s", exc)
             self._client = None
             self._disabled = True
             return
@@ -126,19 +126,19 @@ class SpectronMemoryProvider(MemoryProvider):
 
     def _record_fail(self, where: str, exc: BaseException) -> None:
         if is_auth_error(exc):
-            logger.warning("Spectron auth error during %s; disabling memory: %s", where, exc)
+            logger.warning("AgentMemory auth error during %s; disabling memory: %s", where, exc)
             self._disabled = True
             return
         self._consecutive_failures += 1
         logger.warning(
-            "Spectron %s failed (%d/%d): %s",
+            "AgentMemory %s failed (%d/%d): %s",
             where,
             self._consecutive_failures,
             _FAILURE_THRESHOLD,
             exc,
         )
         if self._consecutive_failures >= _FAILURE_THRESHOLD:
-            logger.warning("Spectron failure threshold reached; disabling memory for session.")
+            logger.warning("AgentMemory failure threshold reached; disabling memory for session.")
             self._disabled = True
 
     def _active(self) -> bool:
@@ -150,12 +150,12 @@ class SpectronMemoryProvider(MemoryProvider):
         if not self._active():
             return ""
         return (
-            "You have persistent long-term memory backed by SurrealDB Spectron. "
+            "You have persistent long-term memory backed by SurrealDB AgentMemory. "
             "Relevant memories are recalled automatically before each turn. "
-            "Use `spectron_recall` to search memory, `spectron_context` for a "
-            "synthesised answer, `spectron_remember` to store durable facts, "
-            "`spectron_forget` to remove them, `spectron_reflect` for insights, "
-            "and `spectron_upload` to ingest documents."
+            "Use `agent_memory_recall` to search memory, `agent_memory_context` for a "
+            "synthesised answer, `agent_memory_remember` to store durable facts, "
+            "`agent_memory_forget` to remove them, `agent_memory_reflect` for insights, "
+            "and `agent_memory_upload` to ingest documents."
         )
 
     def prefetch(self, query: str, *, session_id: str = "") -> str:
@@ -200,14 +200,14 @@ class SpectronMemoryProvider(MemoryProvider):
                 val = data.get(key)
                 if isinstance(val, str) and val.strip():
                     return _truncate(
-                        "## Recalled from memory (Spectron)\n" + val.strip()
+                        "## Recalled from memory (AgentMemory)\n" + val.strip()
                     )
 
         items = _extract_items(data)
         if not items:
             return ""
 
-        lines = ["## Recalled from memory (Spectron)"]
+        lines = ["## Recalled from memory (AgentMemory)"]
         for item in items:
             text = _item_text(item)
             if text:
@@ -241,7 +241,7 @@ class SpectronMemoryProvider(MemoryProvider):
             if self._worker and self._worker.is_alive():
                 return
             self._worker = threading.Thread(
-                target=self._write_loop, name="spectron-writer", daemon=True
+                target=self._write_loop, name="agent_memory-writer", daemon=True
             )
             self._worker.start()
 
@@ -285,7 +285,7 @@ class SpectronMemoryProvider(MemoryProvider):
 
         if self._config.consolidate_on_end:
             threading.Thread(
-                target=self._consolidate, name="spectron-consolidate", daemon=True
+                target=self._consolidate, name="agent_memory-consolidate", daemon=True
             ).start()
 
     def _consolidate(self) -> None:
@@ -309,7 +309,7 @@ class SpectronMemoryProvider(MemoryProvider):
             )
         if not self._active():
             return json.dumps(
-                {"error": "Spectron memory is unavailable.", "provider": self.name}
+                {"error": "AgentMemory memory is unavailable.", "provider": self.name}
             )
         try:
             result = _tools.dispatch(
