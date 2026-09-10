@@ -2,7 +2,8 @@
 
 Imports are deliberately lazy: the SurrealDB SDK is only imported when we
 actually build a client, so importing this package never fails just because
-``surrealdb`` (>=3.0.0a4, which bundles Agent Memory) isn't installed.
+``surrealdb[memory]`` (>=3.0.0b8, which pulls in the Agent Memory client)
+isn't installed.
 ``is_available()`` relies on this to do a cheap, dependency-only readiness check.
 """
 
