@@ -1,6 +1,6 @@
-"""Unit tests for the Spectron memory provider using a mock Spectron client.
+"""Unit tests for the Agent Memory provider using a mock Agent Memory client.
 
-No network and no real ``surrealdb[spectron]`` install are required — the tests
+No network and no real ``surrealdb[agent_memory]`` install are required — the tests
 inject a fake client by monkeypatching ``build_client``.
 """
 
@@ -10,10 +10,10 @@ import json
 
 import pytest
 
-from spectron_hermes import provider as provider_mod
-from spectron_hermes.config import load_config, save_config_file
-from spectron_hermes.provider import SpectronMemoryProvider
-from spectron_hermes.tools import to_jsonable
+from agent_memory_hermes import provider as provider_mod
+from agent_memory_hermes.config import load_config, save_config_file
+from agent_memory_hermes.provider import AgentMemoryProvider
+from agent_memory_hermes.tools import to_jsonable
 
 
 class FakeResp:
@@ -35,7 +35,7 @@ class FakeDocuments:
         return FakeResp(document_id="doc:1", title=title or path)
 
 
-class FakeSpectron:
+class FakeAgentMemory:
     """Records calls and returns canned responses; can be told to fail."""
 
     def __init__(self, fail=False):
@@ -88,7 +88,7 @@ class FakeSpectron:
 def hermes_home(tmp_path):
     save_config_file(
         {
-            "endpoint": "https://example.spectron.dev",
+            "endpoint": "https://example.agent-memory.dev",
             "context": "test-ctx",
             "top_k": 3,
         },
@@ -99,16 +99,16 @@ def hermes_home(tmp_path):
 
 @pytest.fixture
 def fake(monkeypatch):
-    client = FakeSpectron()
+    client = FakeAgentMemory()
     monkeypatch.setattr(provider_mod, "build_client", lambda cfg: client)
-    monkeypatch.setattr(provider_mod, "spectron_installed", lambda: True)
+    monkeypatch.setattr(provider_mod, "agent_memory_installed", lambda: True)
     return client
 
 
 def _make_provider(hermes_home, fake, monkeypatch, **init_kwargs):
-    # API key is a secret sourced from the environment, not spectron.json.
-    monkeypatch.setenv("SPECTRON_API_KEY", "sk-test")
-    p = SpectronMemoryProvider()
+    # API key is a secret sourced from the environment, not agent-memory.json.
+    monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk-test")
+    p = AgentMemoryProvider()
     p.initialize("sess-1", hermes_home=hermes_home, **init_kwargs)
     return p
 
@@ -117,9 +117,9 @@ def _make_provider(hermes_home, fake, monkeypatch, **init_kwargs):
 
 
 def test_config_chain_file_then_env(hermes_home, monkeypatch):
-    monkeypatch.setenv("SPECTRON_API_KEY", "sk-env")
+    monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk-env")
     cfg = load_config(hermes_home)
-    assert cfg.endpoint == "https://example.spectron.dev"  # from file
+    assert cfg.endpoint == "https://example.agent-memory.dev"  # from file
     assert cfg.context == "test-ctx"
     assert cfg.api_key == "sk-env"  # from env
     assert cfg.top_k == 3
@@ -127,14 +127,14 @@ def test_config_chain_file_then_env(hermes_home, monkeypatch):
 
 
 def test_is_available_requires_config_and_sdk(hermes_home, monkeypatch):
-    monkeypatch.setattr(provider_mod, "spectron_installed", lambda: True)
-    monkeypatch.setenv("SPECTRON_API_KEY", "sk")
-    p = SpectronMemoryProvider()
+    monkeypatch.setattr(provider_mod, "agent_memory_installed", lambda: True)
+    monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk")
+    p = AgentMemoryProvider()
     p._hermes_home = hermes_home
     assert p.is_available() is True
 
     # No SDK installed -> not available.
-    monkeypatch.setattr(provider_mod, "spectron_installed", lambda: False)
+    monkeypatch.setattr(provider_mod, "agent_memory_installed", lambda: False)
     assert p.is_available() is False
 
 
@@ -146,12 +146,12 @@ def test_tool_schemas(hermes_home, fake, monkeypatch):
     schemas = p.get_tool_schemas()
     names = {s["name"] for s in schemas}
     assert names == {
-        "spectron_recall",
-        "spectron_remember",
-        "spectron_context",
-        "spectron_forget",
-        "spectron_reflect",
-        "spectron_upload",
+        "agent_memory_recall",
+        "agent_memory_remember",
+        "agent_memory_context",
+        "agent_memory_forget",
+        "agent_memory_reflect",
+        "agent_memory_upload",
     }
     for s in schemas:
         assert s["parameters"]["type"] == "object"
@@ -160,12 +160,12 @@ def test_tool_schemas(hermes_home, fake, monkeypatch):
 def test_dispatch_all_tools_return_json(hermes_home, fake, monkeypatch):
     p = _make_provider(hermes_home, fake, monkeypatch, user_id="tobie")
     cases = [
-        ("spectron_recall", {"query": "role?"}),
-        ("spectron_remember", {"text": "Tobie is CTO"}),
-        ("spectron_context", {"query": "summarise"}),
-        ("spectron_forget", {"query": "old notes", "purge": True}),
-        ("spectron_reflect", {"query": "this week", "persist": True}),
-        ("spectron_upload", {"path": "/tmp/handbook.pdf", "title": "Handbook"}),
+        ("agent_memory_recall", {"query": "role?"}),
+        ("agent_memory_remember", {"text": "Tobie is CTO"}),
+        ("agent_memory_context", {"query": "summarise"}),
+        ("agent_memory_forget", {"query": "old notes", "purge": True}),
+        ("agent_memory_reflect", {"query": "this week", "persist": True}),
+        ("agent_memory_upload", {"path": "/tmp/handbook.pdf", "title": "Handbook"}),
     ]
     for name, args in cases:
         out = json.loads(p.handle_tool_call(name, args))
@@ -181,7 +181,7 @@ def test_dispatch_all_tools_return_json(hermes_home, fake, monkeypatch):
 
 def test_unknown_tool(hermes_home, fake, monkeypatch):
     p = _make_provider(hermes_home, fake, monkeypatch)
-    out = json.loads(p.handle_tool_call("spectron_bogus", {}))
+    out = json.loads(p.handle_tool_call("agent_memory_bogus", {}))
     assert "error" in out
 
 
@@ -256,32 +256,32 @@ def test_on_session_end_consolidates(hermes_home, fake, monkeypatch):
 
 
 def test_circuit_breaker_disables_after_failures(hermes_home, monkeypatch):
-    client = FakeSpectron(fail=True)
+    client = FakeAgentMemory(fail=True)
     monkeypatch.setattr(provider_mod, "build_client", lambda cfg: client)
-    monkeypatch.setattr(provider_mod, "spectron_installed", lambda: True)
-    monkeypatch.setenv("SPECTRON_API_KEY", "sk")
-    p = SpectronMemoryProvider()
+    monkeypatch.setattr(provider_mod, "agent_memory_installed", lambda: True)
+    monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk")
+    p = AgentMemoryProvider()
     p.initialize("sess", hermes_home=hermes_home)
 
     for _ in range(provider_mod._FAILURE_THRESHOLD):
         assert p.prefetch("q") == ""  # fail open, never raises
     assert p._disabled is True
     # Once disabled, tool calls short-circuit with an error, no crash.
-    out = json.loads(p.handle_tool_call("spectron_recall", {"query": "x"}))
+    out = json.loads(p.handle_tool_call("agent_memory_recall", {"query": "x"}))
     assert "error" in out
     p.shutdown()
 
 
 def test_fail_open_never_raises(hermes_home, monkeypatch):
-    client = FakeSpectron(fail=True)
+    client = FakeAgentMemory(fail=True)
     monkeypatch.setattr(provider_mod, "build_client", lambda cfg: client)
-    monkeypatch.setattr(provider_mod, "spectron_installed", lambda: True)
-    monkeypatch.setenv("SPECTRON_API_KEY", "sk")
-    p = SpectronMemoryProvider()
+    monkeypatch.setattr(provider_mod, "agent_memory_installed", lambda: True)
+    monkeypatch.setenv("AGENT_MEMORY_API_KEY", "sk")
+    p = AgentMemoryProvider()
     p.initialize("sess", hermes_home=hermes_home)
     # None of these should raise.
     assert p.prefetch("q") == ""
-    out = json.loads(p.handle_tool_call("spectron_recall", {"query": "x"}))
+    out = json.loads(p.handle_tool_call("agent_memory_recall", {"query": "x"}))
     assert "error" in out
     p.shutdown()
 
@@ -296,28 +296,28 @@ def test_to_jsonable_variants():
 
 
 def test_dispatch_kwargs_match_real_sdk():
-    """Guard the keyword names we pass against the real Spectron SDK.
+    """Guard the keyword names we pass against the real Agent Memory SDK.
 
     Skipped when `surrealdb` isn't installed (e.g. CI runs --no-deps). Catches
     drift like remember(scope=...) vs the SDK's remember(scopes=...).
     """
     import inspect
 
-    spectron = pytest.importorskip("surrealdb.spectron")
+    agent_memory = pytest.importorskip("surrealdb.memory")
 
     def params(method_owner, method_name):
         return set(inspect.signature(getattr(method_owner, method_name)).parameters)
 
-    Spectron = spectron.Spectron
-    remember = params(Spectron, "remember")
+    AgentMemory = agent_memory.Memory
+    remember = params(AgentMemory, "remember")
     assert "scopes" in remember and "scope" not in remember
-    assert "scopes" in params(Spectron, "remember_many")
-    assert "lens" in params(Spectron, "recall")
-    assert "lens" in params(Spectron, "query_context")
-    assert "purge" in params(Spectron, "forget")
-    assert "persist" in params(Spectron, "reflect")
+    assert "scopes" in params(AgentMemory, "remember_many")
+    assert "lens" in params(AgentMemory, "recall")
+    assert "lens" in params(AgentMemory, "query_context")
+    assert "purge" in params(AgentMemory, "forget")
+    assert "persist" in params(AgentMemory, "reflect")
 
-    from surrealdb.spectron._namespaces.documents import BlockingDocuments
+    from surrealdb_memory._namespaces.documents import BlockingDocuments
 
     upload = params(BlockingDocuments, "upload")
     assert "title" in upload and "scopes" in upload
