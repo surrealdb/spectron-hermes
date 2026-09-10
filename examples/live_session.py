@@ -29,7 +29,7 @@ def main() -> int:
     if not provider.is_available():
         print(
             "Agent Memory is not configured. Set AGENT_MEMORY_ENDPOINT / AGENT_MEMORY_CONTEXT / "
-            "AGENT_MEMORY_API_KEY and `pip install 'surrealdb>=3.0.0a4'`.",
+            "AGENT_MEMORY_API_KEY and `pip install 'surrealdb[memory]>=3.0.0b8'`.",
             file=sys.stderr,
         )
         return 1

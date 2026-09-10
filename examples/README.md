@@ -3,7 +3,7 @@
 | File | What it shows | Needs |
 |---|---|---|
 | [`simulate_session.py`](simulate_session.py) | The full Hermes lifecycle (`is_available` → `initialize` → `prefetch` → tool calls → `sync_turn` → `on_session_end`) driven against a **fake in-memory Agent Memory client**. | Nothing but this package. |
-| [`live_session.py`](live_session.py) | The same flow against a **real Agent Memory instance** — a genuine remember → recall round-trip. | `surrealdb>=3.0.0a4` + Agent Memory credentials. |
+| [`live_session.py`](live_session.py) | The same flow against a **real Agent Memory instance** — a genuine remember → recall round-trip. | `surrealdb[memory]>=3.0.0b8` + Agent Memory credentials. |
 | [`agent-memory.json.example`](agent-memory.json.example) | Sample non-secret config (goes to `$HERMES_HOME/agent-memory.json`). | — |
 | [`.env.example`](.env.example) | Sample environment / secrets. | — |
 
